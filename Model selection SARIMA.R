@@ -6,13 +6,13 @@ weather_data <- read.csv(file = "cleaned_weather_data.csv")
 n_electricity <- dim(electricity_production_data)[1]
 data <- data.frame(y = electricity_production_data$value, x = weather_data$value[1:n_electricity])
 model_lm <- lm(y~x, data = data)
-electricity_data_res <- data$y-model$fitted.values
+electricity_data_res <- data$y-model_lm$fitted.values
 model_lm$coef
 acf(electricity_data_res)
 acf(electricity_production_data$value)
 pacf(electricity_data_res)
 
-delectricity_data_res <- diff(electricity_data_res, lag = 12)
+delectricity_data_res <- diff(electricity_data_res, lag = 1)
 plot(delectricity_data_res, type = "l")
 acf(delectricity_data_res,lag.max = 40)
 pacf(delectricity_data_res, lag.max = 40)
@@ -27,7 +27,6 @@ library(forecast)
 model_auto_arima <- auto.arima(electricity_production_data$value, xreg = weather_data$value[1:n_electricity])
 model_arima <- arima(electricity_production_data$value,, xreg = weather_data$value[1:n_electricity], order = c(1,1,1), seasonal = list(order = c(0,1,1), period = 12))
 plot(model_arima$residuals)
-14*14+14*6
 U <- matrix(0, nrow = n_electricity, ncol = 2)
 U[1:n_electricity,1] <- rep(1, n_electricity)
 U[1:n_electricity,2] <- weather_data$value[1:n_electricity]
@@ -40,8 +39,8 @@ kalman_filter_autocorrelated <- function(parameters,y = electricity_production_d
   beta_0 <- parameters[5]
   beta_1 <- parameters[6]
   Gamma <- matrix(c(beta_0,beta_1),nrow = 1)
-  mu_0 <- parameters[7:(7+13)]
-  cov_0 <- matrix(parameters[(7+14):length(parameters)],ncol = 14, nrow = 14)
+  mu_0 <- parameters[7]*matrix(1, nrow = 14)
+  cov_0 <- parameters[8]*diag(14)
   F <- matrix(0, 14,14)
   F[1:13,2:14] <- diag(13)
   F[1:14,1] <- c(1+phi, -phi,0,0,0,0,0,0,0,0,0, 1, -1-phi,phi)
@@ -99,10 +98,10 @@ Theta <- 1
 R <- Q <-  1
 beta_0 <-model_lm$coefficients[1]
 beta_1 <- model_lm$coefficients[2]
-mu_0 <- mean(electricity_production_data$value)*matrix(1,nrow = 14)
-cov_0 <- diag(14)
-parameters = c(phi, theta, Theta, R, beta_0, beta_1,mu_0,cov_0)
-names(parameters) <- c("phi", "theta", "Theta", "R", "beta0", "beta1","mu0","cov0")
+mu_0 <- mean(electricity_production_data$value)
+cov_0 <- var(electricity_production_data$value)
+parameters = c(phi, theta, Theta, R, beta_0, beta_1, mu_0, cov_0)
+names(parameters) <- c("phi", "theta", "Theta", "R", "beta0", "beta1","mu_0", "cov_0")
 kalman <- kalman_filter_autocorrelated(parameters,y = electricity_production_data$value,u = U)
 plot(kalman$sigma,type = "l")
 plot(kalman$innovations/sqrt(kalman$sigma),type = "l",col="blue")
@@ -119,13 +118,12 @@ optimal_x_pred <- kalman_filter_autocorrelated(parameters = ml_kalman$par)
 plot(optimal_x_pred$innovations,type = "l")
 plot(kalman$x_pred[1,]+ (Gamma%*%t(U))[1,],type = "l", col = "blue")
 lines(electricity_production_data$value, col = "red")
-plot(optimal_x_pred$x_pred[1,],type = "l")
-plot(electricity_production_data$value,type = "l")
-
-predict(model_arima,3)
+plot(optimal_x_pred$x_filt[1,]+(Gamma%*%t(U))[1,],type = "l", col = "blue")
+lines(electricity_production_data$value, col = "red")
 
 
-
+plot(optimal_x_pred$sigma, type = "l", col = "pink")
+optimal_x_pred$sigma
 #Maybe use later?
 kalman_filter_uncorrelated <- function(y, F, G, A, Gamma,u,mu_0, cov_0,R,Q, n_ahead = 1){
   T <- length(y)
