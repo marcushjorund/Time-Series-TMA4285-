@@ -100,14 +100,13 @@ R <- Q <-  1
 beta_0 <-model_lm$coefficients[1]
 beta_1 <- model_lm$coefficients[2]
 mu_0 <- mean(electricity_production_data$value)*matrix(1,nrow = 14)
-cov_0 <- var(electricity_production_data$value)*matrix(1,nrow = 14, ncol =14)
+cov_0 <- diag(14)
 parameters = c(phi, theta, Theta, R, beta_0, beta_1,mu_0,cov_0)
-parameters
 names(parameters) <- c("phi", "theta", "Theta", "R", "beta0", "beta1","mu0","cov0")
-parameters
 kalman <- kalman_filter_autocorrelated(parameters,y = electricity_production_data$value,u = U)
 plot(kalman$sigma,type = "l")
-plot(kalman$innovations/sqrt(kalman$sigma),type = "l")
+plot(kalman$innovations/sqrt(kalman$sigma),type = "l",col="blue")
+
 
 log_lik_kalman <- function(parameters){kalman_filter_autocorrelated(parameters, n_ahead = 0)$log_lik_kalman}
 maximum_likelihood_kalman<- function(y,u,parameters){
