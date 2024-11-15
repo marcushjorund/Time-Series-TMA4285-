@@ -10,7 +10,8 @@ ggplot(data = weather_data, aes(x = seq(n_weather_org), y = value)) +
 
 electricity_production_data = read.csv(file = "electricity_production_data.csv")
 n_electricity = dim(electricity_production_data)[1]
-tail(electricity_production_data)
+head(electricity_production_data)
+head(weather_data)
 ggplot(data = electricity_production_data, aes(x = seq(n_electricity), y = value)) +
   geom_line() +
   theme_bw() + 
