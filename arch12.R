@@ -143,7 +143,21 @@ plot_garch_diagnostics <- function(garch_fit, returns, original_data) {
     arch_effect = summary(lm(std_resid^2 ~ lag(std_resid^2)))$r.squared
   )
 }
+# Read and prepare electricity data
+elData <- read.csv("electricity_production_data.csv") %>%
+  mutate(
+    date = ym(måned),  # Convert Swedish/Norwegian month format to date
+    year = year(date),
+    month = month(date)
+  )
 
-electricity_returns <- prepare_data(electricity_data)
+# Read and prepare weather data
+weatherData <- read.csv("weather_data.csv") %>%
+  mutate(
+    date = ymd_hms(referenceTime),
+    year = year(date),
+    month = month(date)
+  )
+electricity_returns <- prepare_data(elData)
 arch_fit <- arch_12(electricity_returns)
-plot_garch_diagnostics(arch_fit, electricity_returns, electricity_data)
+plot_garch_diagnostics(arch_fit, electricity_returns, elData)

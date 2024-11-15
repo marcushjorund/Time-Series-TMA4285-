@@ -2,10 +2,9 @@
 # Load required packages
 library(tidyverse)
 library(lubridate)
-setwd('/Users/axelhagen/Documents/2024H/TMA4285/')
 
 # Read and prepare electricity data
-elData <- read.csv("electricity_production.csv") %>%
+elData <- read.csv("electricity_production_data.csv") %>%
   mutate(
     date = ym(måned),  # Convert Swedish/Norwegian month format to date
     year = year(date),
@@ -13,23 +12,23 @@ elData <- read.csv("electricity_production.csv") %>%
   )
 
 # Read and prepare weather data
-weatherData <- read.csv("weather.csv") %>%
+weatherData <- read.csv("weatherData.csv") %>%
   mutate(
     date = ymd_hms(referenceTime),
     year = year(date),
     month = month(date)
   )
 # Combine datasets
-combined_data <- electricity_data %>%
+combined_data <- elData %>%
   select(date, year, month, electricity = value) %>%
   inner_join(
-    weather_data %>% select(date, year, month, precipitation = value),
+    weatherData %>% select(date, year, month, precipitation = value),
     by = c("year", "month")
   ) %>%
   select(date = date.x, year, month, electricity, precipitation)
 
 # Initial visualization of electricity production
-ggplot(electricity_data, aes(x = date, y = value)) +
+ggplot(elData, aes(x = date, y = value)) +
   geom_line() +
   labs(
     title = "Monthly Electricity Production in Trøndelag",
@@ -39,7 +38,7 @@ ggplot(electricity_data, aes(x = date, y = value)) +
   theme_minimal()
 
 # Initial visualization of precipitation
-ggplot(weather_data, aes(x = date, y = value)) +
+ggplot(weatherData, aes(x = date, y = value)) +
   geom_line() +
   labs(
     title = "Monthly Precipitation in Trondheim",
@@ -49,7 +48,7 @@ ggplot(weather_data, aes(x = date, y = value)) +
   theme_minimal()
 
 # Calculate basic statistics
-electricity_stats <- electricity_data %>%
+electricity_stats <- elData %>%
   summarise(
     mean_production = mean(value, na.rm = TRUE),
     sd_production = sd(value, na.rm = TRUE),
@@ -57,7 +56,7 @@ electricity_stats <- electricity_data %>%
     max_production = max(value, na.rm = TRUE)
   )
 
-weather_stats <- weather_data %>%
+weather_stats <- weatherData %>%
   summarise(
     mean_precipitation = mean(value, na.rm = TRUE),
     sd_precipitation = sd(value, na.rm = TRUE),
@@ -66,7 +65,7 @@ weather_stats <- weather_data %>%
   )
 
 # Create seasonal plots
-electricity_seasonal <- electricity_data %>%
+electricity_seasonal <- elData %>%
   ggplot(aes(x = month, y = value, group = year)) +
   geom_line(alpha = 0.3) +
   stat_summary(aes(group = 1), fun = mean, color = "red", size = 1) +

@@ -9,6 +9,7 @@ ggplot(data = weather_data, aes(x = seq(n_weather_org), y = value)) +
   ggtitle("Monthy precipitation from Dec. 1950 - Sep. 2019")
 
 electricity_production_data = read.csv(file = "electricity_production_data.csv")
+electricity_production_data
 n_electricity = dim(electricity_production_data)[1]
 head(electricity_production_data)
 head(weather_data)

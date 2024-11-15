@@ -1,2 +1,2 @@
 # Time-Series-TMA4285-
-Github repository for time series project in TMA4285 
+Github repository for time series project in TMA4285. The repository contains scars from two people not working in sync, so we have several ways of fetching the data. The files "Data exploration.R" and "Model selection SARIMA.R" contains code building the SARIMA model and the corresponding plots and transformations to build this model in addition to the Kalman filter for autocorrelated errors. The files "arch12.R" and "seasonal.R" contain the equivalent models and explorations for the GARCH model. 
